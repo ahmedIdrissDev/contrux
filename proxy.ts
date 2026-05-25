@@ -19,34 +19,40 @@ const isManagerRoute = createRouteMatcher([
   '/chantier(.*)',
   '/material(.*)',
   '/stock(.*)',
-  'achat(.*)'
-  
+  '/achat(.*)'
 ])
 
-// Routes that anyone with a valid role (User, Manager, Admin) can access
+// Routes that anyone with a valid role can access
 const isUserRoute = createRouteMatcher([
   '/demande(.*)',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) return NextResponse.next()
-  
-  const { sessionClaims , isAuthenticated } = await auth()
-  const pathname =  req.nextUrl.pathname
-  if (!isAuthenticated) {
-    return (await auth()).redirectToSignIn({ returnBackUrl: req.url })
+  const { sessionClaims, userId, redirectToSignIn } = await auth()
+  const pathname = req.nextUrl.pathname
+
+  // Handle public routes first
+  if (isPublicRoute(req)) {
+    return NextResponse.next()
   }
 
-  const role = sessionClaims?.metadata?.role as string | undefined
-   if(isAuthenticated && pathname=='/'){
-          return NextResponse.redirect(new URL('/material', req.url))
-   }
+  // Redirect to sign-in if not authenticated
+  if (!userId) {
+    return redirectToSignIn({ returnBackUrl: req.url })
+  }
+
+  const role = sessionClaims?.metadata?.role
+
+  // Redirect from root to default dashboard if authenticated
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/material', req.url))
+  }
+
   // 1. Admin only check
   if (isAdminOnlyRoute(req)) {
-    if (role !='system:admin:all') {
+    if (role !== 'system:admin:all') {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
-    return NextResponse.next()
   }
 
   // 2. Manager & Admin check
@@ -54,7 +60,6 @@ export default clerkMiddleware(async (auth, req) => {
     if (role !== 'system:manager:all' && role !== 'system:admin:all') {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
-    return NextResponse.next()
   }
 
   // 3. Any role check for user routes
@@ -62,7 +67,6 @@ export default clerkMiddleware(async (auth, req) => {
     if (!role) {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
-    return NextResponse.next()
   }
 
   return NextResponse.next()
@@ -70,7 +74,9 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
+    // Skip Next.js internals and all static files
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 }

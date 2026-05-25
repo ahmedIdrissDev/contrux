@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 
 const AuthLayout = ({
   children,
@@ -6,16 +7,16 @@ const AuthLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <main className='flex justify-center items-center h-screen overflow-hidden bg-[var(--color-brand-teal-deep)] relative'>
-      {/* Background Decorative Element */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[80%] rounded-full bg-[var(--color-brand-green)] blur-[120px]"></div>
-        <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[70%] rounded-full bg-[var(--color-brand-teal)] blur-[120px]"></div>
+    <main className='min-h-screen grid grid-cols-1 lg:grid-cols-2'>
+      {/* Left side: Content */}
+      <div className="flex items-center justify-center p-8 bg-canvas">
+        <div className="w-full flex justify-center">
+          {children}
+        </div>
       </div>
-      
-      <div className="relative z-10 w-full flex justify-center px-4">
-        {children} 
-      </div>
+
+      {/* Right side: Visual */}
+   <div className="bg-neutral-100 h-dvh"></div>
     </main>
   )
 }

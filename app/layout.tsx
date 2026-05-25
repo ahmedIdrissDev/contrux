@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ConvexClientProvider } from "./_provider/ConvexClientProvider";
+import { experimental__simple } from "@clerk/themes";
 
 export const metadata: Metadata = {
   title: "CONSTRUX INTGRATION",
@@ -9,13 +10,27 @@ export const metadata: Metadata = {
   icons:'/img/icon.svg'
 };
 
+
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        theme:'simple',
+        variables: {
+          
+          colorPrimary: "#FF5D00",
+          colorText: "#221A15",
+          borderRadius:'5px',
+
+        }
+      }}
+    >
       <html
         lang="en"
         className="h-full antialiased"
